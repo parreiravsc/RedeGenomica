@@ -39,7 +39,7 @@ df2_agrupado_periodo_regiao = pd.read_csv('df2_agrupado_periodo_regiao.csv')
 df3_agrupado_periodo_estado = pd.read_csv('df3_agrupado_periodo_estado.csv')
 # aba PCR
 # BR
-df_pcr_br_ano = pd.read_csv('df_dengue_pcr_ano.csv')
+df_pcr_br_ano = pd.read_csv('df_dengue_pcr_ano.csv') #ajustar aqui para grafico
 df_pcr_br_periodo = pd.read_csv('df_dengue_pcr_periodo.csv')
 # regiao
 df_pcr_regiao_ano = pd.read_csv('df_dengue_pcr_regiao_ano.csv')
@@ -82,7 +82,7 @@ texto_style = {'color':'#0d2a63',
 
 # estilo html.H5 - Selecione a região e Tabela de dados
 h5_style={'color':'#0d2a63', 
-          'fontSize':16, 
+          'fontSize':18, 
           'font-family':'sans-serif', 
           'font-weight':'bold'}
 
@@ -179,6 +179,16 @@ tab_selected_style = {'borderTop':'8px solid #d6d6d6',
                       'fontWeight':'bold',
                       'fontSize':18}
 ### fim Cores e layout gráficos ###
+
+###funções###
+
+def tratar_no_info(df):
+    df = df.drop(df[(df['Porcentagem'] < 100) & ((df['Sorotipo'] == 'S'))].index)
+    df = df.drop(df[(df['Porcentagem'] < 100) & ((df['Sorotipo'] == 'Sem informacao'))].index)
+
+    return df
+### fim funções ###
+
 
 
 ### Dropdowns ###
@@ -316,66 +326,77 @@ fig_nao_ha_dados.update_layout(height=400,
 
 ### ABA PCR ###
 # dfs Brasil
-df_pcr_br_ano['Sorotipo'] = df_pcr_br_ano['Sorotipo'].astype('str')
-df_pcr_br_periodo['Sorotipo'] = df_pcr_br_periodo['Sorotipo'].astype('str')
+df_pcr_br_ano['Sorotipo'] = df_pcr_br_ano['Sorotipo'].astype('str').str[0]
+df_pcr_br_periodo['Sorotipo'] = df_pcr_br_periodo['Sorotipo'].astype('str').str[0]
 
 df_sorotipo1_ano = df_pcr_br_ano.query('Sorotipo == "1"').reset_index(drop=True)
 df_sorotipo2_ano = df_pcr_br_ano.query('Sorotipo == "2"').reset_index(drop=True)
 df_sorotipo3_ano = df_pcr_br_ano.query('Sorotipo == "3"').reset_index(drop=True)
 df_sorotipo4_ano = df_pcr_br_ano.query('Sorotipo == "4"').reset_index(drop=True)
+df_sorotipoNoInfo_ano = df_pcr_br_ano.query('Sorotipo == "S"').reset_index(drop=True)
+
 df_sorotipo1_periodo = df_pcr_br_periodo.query('Sorotipo == "1"').reset_index(drop=True)
 df_sorotipo2_periodo = df_pcr_br_periodo.query('Sorotipo == "2"').reset_index(drop=True)
 df_sorotipo3_periodo = df_pcr_br_periodo.query('Sorotipo == "3"').reset_index(drop=True)
 df_sorotipo4_periodo = df_pcr_br_periodo.query('Sorotipo == "4"').reset_index(drop=True)
+df_sorotipoNoInfo_periodo = df_pcr_br_periodo.query('Sorotipo == "S"').reset_index(drop=True)
+
 
 # figura Brasil
 fig_pcr_br = make_subplots(specs=[[{"secondary_y": True}]])
 fig_pcr_br.add_trace(go.Bar(name='Sorotipo 1',
-                            marker_color='cornflowerblue',
+                            marker_color='#cb181d',
                             x=df_sorotipo1_periodo['Período'],
                             y=df_sorotipo1_periodo['CasosExtrap']),
                       secondary_y=False)
 fig_pcr_br.add_trace(go.Bar(name='Sorotipo 2',
-                            marker_color='orange',
+                            marker_color='#08519c',
                             x=df_sorotipo2_periodo['Período'],
                             y=df_sorotipo2_periodo['CasosExtrap']),
                       secondary_y=False)
 fig_pcr_br.add_trace(go.Bar(name='Sorotipo 3',
-                            marker_color='green',
+                            marker_color='#238b45',
                             x=df_sorotipo3_periodo['Período'],
                             y=df_sorotipo3_periodo['CasosExtrap']),
                       secondary_y=False)
 fig_pcr_br.add_trace(go.Bar(name='Sorotipo 4',
-                            marker_color='red',
+                            marker_color='#b68100',
                             x=df_sorotipo4_periodo['Período'],
                             y=df_sorotipo4_periodo['CasosExtrap']),
                       secondary_y=False)
 
+fig_pcr_br.add_trace(go.Bar(name='Sem Informação',
+                            marker_color='#808080',
+                            x=tratar_no_info(df_sorotipoNoInfo_periodo)['Período'],
+                            y=tratar_no_info(df_sorotipoNoInfo_periodo)['CasosExtrap']),
+                      secondary_y=False)
+
+
 # LINHA
 fig_pcr_br.add_trace(go.Scatter(showlegend=False,
                                 name='Sorotipo 1',
-                                marker_color='cornflowerblue',
+                                marker_color='#cb181d',
                                 x=df_sorotipo1_ano['Ano'],
                                 y=df_sorotipo1_ano['Porcentagem'],
                                 hovertemplate = 'Frequência: %{y}%'),
                       secondary_y=True)
 fig_pcr_br.add_trace(go.Scatter(showlegend=False,
                                 name='Sorotipo 2',
-                                marker_color='orange',
+                                marker_color='#08519c',
                                 x=df_sorotipo2_ano['Ano'],
                                 y=df_sorotipo2_ano['Porcentagem'],
                                 hovertemplate = 'Frequência: %{y}%'),
                       secondary_y=True)
 fig_pcr_br.add_trace(go.Scatter(showlegend=False,
                                 name='Sorotipo 3',
-                                marker_color='green',
+                                marker_color='#238b45',
                                 x=df_sorotipo3_ano['Ano'],
                                 y=df_sorotipo3_ano['Porcentagem'],
                                 hovertemplate = 'Frequência: %{y}%'),
                       secondary_y=True)
 fig_pcr_br.add_trace(go.Scatter(showlegend=False,
                                 name='Sorotipo 4',
-                                marker_color='red',
+                                marker_color='#b68100',
                                 x=df_sorotipo4_ano['Ano'],
                                 y=df_sorotipo4_ano['Porcentagem'],
                                 hovertemplate = 'Frequência: %{y}%'),
@@ -410,22 +431,33 @@ def calcula_frequencia_sorotipo(df, col_name_tempo, col_name_local, local,):
     df_filtrado_total = df_filtrado[df_filtrado[f'{col_name_tempo}'] == t]
     # filtrar o ANO e sorotipo
     df_filtrado_sorotipo = df_filtrado[df_filtrado[f'{col_name_tempo}'] == t]
-    df_filtrado_sorotipo = df_filtrado_sorotipo.query('Sorotipo != "Sem informação"')
+    #df_filtrado_sorotipo = df_filtrado_sorotipo.query('Sorotipo != "Sem informação"') #v2 vini
+    df_filtrado_sorotipo_onlyinfo = df_filtrado_sorotipo.query('Sorotipo != "Sem informacao"')
+   
+
+
     # total de casos do período
     total_casos = df_filtrado_total['Casos'].sum()
-    total_casos_sorotipo = df_filtrado_sorotipo['Casos'].sum()
+    total_casos_sorotipo = df_filtrado_sorotipo_onlyinfo['Casos'].sum()
     # porcentagem de cada sorotipo por ANO pelo total de casos do ANO
     df_filtrado_sorotipo['CasosExtrap'] = (df_filtrado_sorotipo['Casos']*total_casos)/total_casos_sorotipo
     df_filtrado_sorotipo['CasosExtrap'] = df_filtrado_sorotipo['CasosExtrap'].round(0)
+    
+    #conserta o casos extrapolados para o sem informação repetindo a iformação real em Casos extrapolados
+    df_filtrado_sorotipo.loc[df_filtrado_sorotipo['Sorotipo'] == 'Sem informacao', 'CasosExtrap'] = df_filtrado_sorotipo['Casos']
+    
     df_filtrado_sorotipo['Porcentagem'] = ((df_filtrado_sorotipo['CasosExtrap']/total_casos)*100).round(2)
     # juntar os períodos
     df_final = pd.concat([df_final, df_filtrado_sorotipo])
+
   df_final['Sorotipo'] = df_final['Sorotipo'].astype('str').str[0]
   df_sorotipo1 = df_final.query('Sorotipo == "1"').reset_index(drop=True)
   df_sorotipo2 = df_final.query('Sorotipo == "2"').reset_index(drop=True)
   df_sorotipo3 = df_final.query('Sorotipo == "3"').reset_index(drop=True)
   df_sorotipo4 = df_final.query('Sorotipo == "4"').reset_index(drop=True)
-  return df_sorotipo1, df_sorotipo2, df_sorotipo3, df_sorotipo4
+  df_sorotiponNoinfo = df_final.query('Sorotipo == "S"').reset_index(drop=True)
+  
+  return df_sorotipo1, df_sorotipo2, df_sorotipo3, df_sorotipo4, df_sorotiponNoinfo
 ### fim ABA PCR ###
 
 
@@ -435,10 +467,6 @@ def calcula_frequencia_sorotipo(df, col_name_tempo, col_name_local, local,):
 #   'CACHE_DIR': 'cache-directory'})
 app.layout = dbc.Container(fluid=True,
                            children=[html.H1('VIGILÂNCIA GENÔMICA DA DENGUE NO BRASIL', style=h1_style),
-                                     html.H6('''Seguindo o padrão internacional de nomenclatura para viroses respiratórias,
-                                     o nome da amostra faz referência ao local de coleta do espécime clínico.
-                                     Portanto, amostras coletadas de pacientes transferidos ou viajantes entre estados são mostradas
-                                     nos gráficos, tabelas e mapas de acordo com o local de coleta.''', style=h6_style), 
                                      html.Br(),
                                      # TABS
                                      dcc.Tabs(style=tabs_styles, 
@@ -448,8 +476,8 @@ app.layout = dbc.Container(fluid=True,
                                              selected_style=tab_selected_style,   
                                              children=[
                                      html.Br(),
-                                     html.H6('''Dados gerados pela Rede Genômica Fiocruz e/ou depositados na plataforma GISAID por outras instituições
-                                     a partir de amostras brasileiras''',
+                                     html.H6('''Dados gerados pela Rede Genômica Fiocruz ou outras instituições a partir de amostras brasileiras 
+                                             e depositados na plataforma EpiArbo do GISAID''',
                                              style={'color':'#0d2a63',
                                                     'fontSize':20,
                                                     'font-family':'sans-serif',
@@ -460,10 +488,6 @@ app.layout = dbc.Container(fluid=True,
                                                                             'fontSize':14,
                                                                             'font-family':'sans-serif',
                                                                             'textAlign':'right'}),
-                                     html.H6('''¹As frequências mostradas não são necessariamente representativas.
-                                     Pode haver viés de seleção com a inclusão de investigação genômica de casos
-                                     inusitados, rastreio de contactantes e seleção de amostras através de protocolo
-                                     de inferência de RT-PCR em tempo real pra detecção de potenciais VOCs.''', style=texto_style),
                                      html.Br(),
                                      html.H2('TOTAL DE GENOMAS DEPOSITADOS E DISPONÍVEIS NO GISAID', style=h2_style),
                                      html.Div([html.Div(dcc.Graph(id='fig1_anoSorotipo', figure=fig1_anoSorotipo), className='six columns'),
@@ -478,8 +502,21 @@ app.layout = dbc.Container(fluid=True,
                                      html.Br(), 
                                      html.H5('Selecione a década:', style=h5_style),
                                      html.Div(dcc.Dropdown(id='decada_dropdown_regiao', options=decada_dropdown_regiao, value=2020, clearable=False)),
-                                     html.Div([html.Div(dcc.Graph(id='fig2_barplot', figure={}), className='six columns'),
-                                               html.Div(dcc.Graph(id='fig2_area', figure={}), className='six columns')], className='row'),
+                                    #consertar : graficos lado a lado
+                                   html.Div([dbc.Container([
+                                     dbc.Row([
+                                       dbc.Col(dcc.Graph(id='fig2_barplot', figure={}), width=6),
+                                       dbc.Col(dcc.Graph(id='fig2_area', figure={}), width=6),
+                                       ]) ])
+                                       ]),
+                                    #  html.Div([dbc.Col(dcc.Graph(id='fig2_barplot', figure={}),), 
+                                    #            dbc.Col(dcc.Graph(id='fig2_area', figure={})),
+                                    #           ]),
+                                    html.Div([html.H6(['* Dependendo do tamanho da sequência nucleotídica pode não ser possível definir o genótipo',
+                                                       html.Br(),
+                                                       '** Sorotipo:genótipo (ex.: DENV1:V = DENV sorotipo 1, genótipo V)'
+                                                        ], style=h6_style2), 
+                                     ]),
                                      html.Br(), 
                                      html.Br(), 
                                      html.Br(),
@@ -507,9 +544,15 @@ app.layout = dbc.Container(fluid=True,
                                              children=[
                                      
                                      html.Br(),
-                                     html.H2('SOROTIPOS DE DENV MAIS ABUNDANTES NO BRASIL', style=h2_style),
-                                     html.H6('Dados de 2007-2024(ABR)', style=h6_style),
-                                     html.Br(),
+                                     html.H2('SOROTIPOS DE DENV NO BRASIL AO LONGO DOS ANOS', style=h2_style),
+                                     html.H6('Dados de 2007-2024', style={'color':'#0d2a63',
+                                                                            'fontSize':24,
+                                                                            'font-family':'sans-serif',
+                                                                            'textAlign':'center'}),
+                                     html.H6(texto_atualizacao_data, style={'color':'#0d2a63',
+                                                                            'fontSize':14,
+                                                                            'font-family':'sans-serif',
+                                                                            'textAlign':'right'}),
                                      html.Div([
                                        html.Iframe(srcDoc=open('sorotipos_denv_brasil.html', 'r').read(), width='100%', height='600')
                                        ]),
@@ -519,6 +562,8 @@ app.layout = dbc.Container(fluid=True,
                                      html.Div(dcc.Dropdown(id='regiao_pcr_dropdown', options=regiao_dropdown, value='Brasil', clearable=False)),
                                      html.Div([html.Div(dcc.Graph(id='fig_pcr_regiao', figure={}), className='ten columns')], className='row'),
                                      html.Br(),
+                                     #consertar : graficos lado a lado
+                                     # colocar ** para explicar o eixo y de gráfico - adicionar desconhecido para os dados de sorotipo ausentes 
                                      html.H5('Selecione o estado:', style=h5_style),
                                      html.Div(dcc.Dropdown(id='estado_pcr_dropdown', options=estado_dropdown, value='Acre', clearable=False)),
                                      html.Div([html.Div(dcc.Graph(id='fig_pcr_estado', figure={}), className='ten columns')], className='row')
@@ -737,56 +782,61 @@ def update_pcr_regiao(regiao):
   if regiao == 'Brasil':
         return fig_pcr_br
   else:
-    df_regiao1_ano, df_regiao2_ano, df_regiao3_ano, df_regiao4_ano = calcula_frequencia_sorotipo(df_pcr_regiao_ano, 'Ano', 'Região', regiao)
-    df_regiao1_per, df_regiao2_per, df_regiao3_per, df_regiao4_per = calcula_frequencia_sorotipo(df_pcr_regiao_periodo, 'Período', 'Região', regiao)
+    df_regiao1_ano, df_regiao2_ano, df_regiao3_ano, df_regiao4_ano, df_regiaoNoInfo_ano  = calcula_frequencia_sorotipo(df_pcr_regiao_ano, 'Ano', 'Região', regiao)
+    df_regiao1_per, df_regiao2_per, df_regiao3_per, df_regiao4_per, df_regiaoNoInfo_per = calcula_frequencia_sorotipo(df_pcr_regiao_periodo, 'Período', 'Região', regiao)
     
     fig_pcr_regiao = make_subplots(specs=[[{"secondary_y": True}]])
     fig_pcr_regiao.add_trace(go.Bar(name='Sorotipo 1',
-                                    marker_color='cornflowerblue',
+                                    marker_color='#cb181d',
                                     x=df_regiao1_per['Período'],
                                     y=df_regiao1_per['CasosExtrap']),
                               secondary_y=False)
     fig_pcr_regiao.add_trace(go.Bar(name='Sorotipo 2',
-                                    marker_color='orange',
+                                    marker_color='#08519c',
                                     x=df_regiao2_per['Período'],
                                     y=df_regiao2_per['CasosExtrap']),
                               secondary_y=False)
     fig_pcr_regiao.add_trace(go.Bar(name='Sorotipo 3',
-                                    marker_color='green',
+                                    marker_color='#238b45',
                                     x=df_regiao3_per['Período'],
                                     y=df_regiao3_per['CasosExtrap']),
                               secondary_y=False)
     fig_pcr_regiao.add_trace(go.Bar(name='Sorotipo 4',
-                                    marker_color='red',
+                                    marker_color='#b68100',
                                     x=df_regiao4_per['Período'],
                                     y=df_regiao4_per['CasosExtrap']),
+                              secondary_y=False)
+    fig_pcr_regiao.add_trace(go.Bar(name='Sem Informação',
+                                    marker_color='#808080',
+                                    x=tratar_no_info(df_regiaoNoInfo_per)['Período'],
+                                    y=tratar_no_info(df_regiaoNoInfo_per)['CasosExtrap']),
                               secondary_y=False)
 
     # LINHA
     fig_pcr_regiao.add_trace(go.Scatter(showlegend=False,
                                         name='Sorotipo 1',
-                                        marker_color='cornflowerblue',
+                                        marker_color='#cb181d',
                                         x=df_regiao1_ano['Ano'],
                                         y=df_regiao1_ano['Porcentagem'],
                                         hovertemplate = 'Frequência: %{y}%'),
                               secondary_y=True)
     fig_pcr_regiao.add_trace(go.Scatter(showlegend=False,
                                         name='Sorotipo 2',
-                                        marker_color='orange',
+                                        marker_color='#08519c',
                                         x=df_regiao2_ano['Ano'],
                                         y=df_regiao2_ano['Porcentagem'],
                                         hovertemplate = 'Frequência: %{y}%'),
                               secondary_y=True)
     fig_pcr_regiao.add_trace(go.Scatter(showlegend=False,
                                         name='Sorotipo 3',
-                                        marker_color='green',
+                                        marker_color='#238b45',
                                         x=df_regiao3_ano['Ano'],
                                         y=df_regiao3_ano['Porcentagem'],
                                         hovertemplate = 'Frequência: %{y}%'),
                               secondary_y=True)
     fig_pcr_regiao.add_trace(go.Scatter(showlegend=False,
                                         name='Sorotipo 4',
-                                        marker_color='red',
+                                        marker_color='#b68100',
                                         x=df_regiao4_ano['Ano'],
                                         y=df_regiao4_ano['Porcentagem'],
                                         hovertemplate = 'Frequência: %{y}%'),
@@ -814,56 +864,61 @@ def update_pcr_regiao(regiao):
               Input(component_id='estado_pcr_dropdown', component_property='value'))
 def update_pcr_estado(estado):
   time.sleep(2)
-  df_estado1_ano, df_estado2_ano, df_estado3_ano, df_estado4_ano = calcula_frequencia_sorotipo(df_pcr_estado_ano, 'Ano', 'Estado', estado)
-  df_estado1_per, df_estado2_per, df_estado3_per, df_estado4_per = calcula_frequencia_sorotipo(df_pcr_estado_periodo, 'Período', 'Estado', estado)
+  df_estado1_ano, df_estado2_ano, df_estado3_ano, df_estado4_ano, df_regiaoNoInfo_ano = calcula_frequencia_sorotipo(df_pcr_estado_ano, 'Ano', 'Estado', estado)
+  df_estado1_per, df_estado2_per, df_estado3_per, df_estado4_per, df_regiaoNoInfo_per = calcula_frequencia_sorotipo(df_pcr_estado_periodo, 'Período', 'Estado', estado)
     
   fig_pcr_estado = make_subplots(specs=[[{"secondary_y": True}]])
   fig_pcr_estado.add_trace(go.Bar(name='Sorotipo 1',
-                                  marker_color='cornflowerblue',
+                                  marker_color='#cb181d',
                                   x=df_estado1_per['Período'],
                                   y=df_estado1_per['CasosExtrap']),
                            secondary_y=False)
   fig_pcr_estado.add_trace(go.Bar(name='Sorotipo 2',
-                                  marker_color='orange',
+                                  marker_color='#08519c',
                                   x=df_estado2_per['Período'],
                                   y=df_estado2_per['CasosExtrap']),
                               secondary_y=False)
   fig_pcr_estado.add_trace(go.Bar(name='Sorotipo 3',
-                                  marker_color='green',
+                                  marker_color='#238b45',
                                   x=df_estado3_per['Período'],
                                   y=df_estado3_per['CasosExtrap']),
                            secondary_y=False)
   fig_pcr_estado.add_trace(go.Bar(name='Sorotipo 4',
-                                  marker_color='red',
+                                  marker_color='#b68100',
                                   x=df_estado4_per['Período'],
                                   y=df_estado4_per['CasosExtrap']),
+                           secondary_y=False)
+  fig_pcr_estado.add_trace(go.Bar(name='Sem Informação',
+                                  marker_color='#808080',
+                                  x=tratar_no_info(df_regiaoNoInfo_per)['Período'],
+                                  y=tratar_no_info(df_regiaoNoInfo_per)['CasosExtrap']),
                            secondary_y=False)
 
     # LINHA
   fig_pcr_estado.add_trace(go.Scatter(showlegend=False,
                                       name='Sorotipo 1',
-                                      marker_color='cornflowerblue',
+                                      marker_color='#cb181d',
                                       x=df_estado1_ano['Ano'],
                                       y=df_estado1_ano['Porcentagem'],
                                       hovertemplate = 'Frequência: %{y}%'),
                            secondary_y=True)
   fig_pcr_estado.add_trace(go.Scatter(showlegend=False,
                                       name='Sorotipo 2',
-                                      marker_color='orange',
+                                      marker_color='#08519c',
                                       x=df_estado2_ano['Ano'],
                                       y=df_estado2_ano['Porcentagem'],
                                       hovertemplate = 'Frequência: %{y}%'),
                            secondary_y=True)
   fig_pcr_estado.add_trace(go.Scatter(showlegend=False,
                                       name='Sorotipo 3',
-                                      marker_color='green',
+                                      marker_color='#238b45',
                                       x=df_estado3_ano['Ano'],
                                       y=df_estado3_ano['Porcentagem'],
                                       hovertemplate = 'Frequência: %{y}%'),
                            secondary_y=True)
   fig_pcr_estado.add_trace(go.Scatter(showlegend=False,
                                       name='Sorotipo 4',
-                                      marker_color='red',
+                                      marker_color='#b68100',
                                       x=df_estado4_ano['Ano'],
                                       y=df_estado4_ano['Porcentagem'],
                                       hovertemplate = 'Frequência: %{y}%'),
