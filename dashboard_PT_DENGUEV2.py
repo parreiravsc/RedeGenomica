@@ -18,6 +18,7 @@ TIMEOUT = 60
 ### App ###
 server = flask.Flask(__name__)
 app = dash.Dash(__name__, 
+                external_stylesheets=["https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"],
                 server=server, 
                 meta_tags=[{'name': 'viewport', 
                             'content': 'width=device-width, initial-scale=1.0'}])
@@ -160,14 +161,24 @@ layout_legenda={'orientation': 'h',
                 'x': 0.5, 'y': 1.0,
                 'font_color': '#222a2a'}
 
-tabs_styles = {'height':'46px'}
+# tabs_styles = {'height':'70px'}
 
-tab_style = {'borderBottom':'8px solid #d6d6d6',
-             'borderTop':'1px solid #d6d6d6',
-             'borderRight':'4px solid #d6d6d6', 
-             'borderLeft':'4px solid #d6d6d6',
-             'padding':'6px',
-             'fontSize':18}
+# tab_style = {'borderBottom':'8px solid #d6d6d6',
+#              'borderTop':'1px solid #d6d6d6',
+#              'borderRight':'4px solid #d6d6d6', 
+#              'borderLeft':'4px solid #d6d6d6',
+#              'padding':'6px',
+#              'fontSize':18}
+tabs_styles = {'height':'3.5em'}  # Definindo a altura como 3.5 vezes o tamanho da fonte
+
+tab_style = {
+    'borderBottom':'0.5em solid #d6d6d6',  # Ajustando a largura da borda para ser relativa
+    'borderTop':'0.1em solid #d6d6d6',
+    'borderRight':'0.2em solid #d6d6d6', 
+    'borderLeft':'0.2em solid #d6d6d6',
+    'padding':'0.5em',  # Ajustando o padding relativo ao tamanho do texto
+    'fontSize': '16px',  # Definindo o tamanho da fonte como 1.5 vezes o tamanho padrão
+}
 
 tab_selected_style = {'borderTop':'8px solid #d6d6d6',
                       'borderRight':'4px solid #d6d6d6', 
@@ -177,7 +188,7 @@ tab_selected_style = {'borderTop':'8px solid #d6d6d6',
                       'color':'white',
                       'padding':'6px',
                       'fontWeight':'bold',
-                      'fontSize':18}
+                      'fontSize':16}
 ### fim Cores e layout gráficos ###
 
 ###funções###
@@ -472,7 +483,7 @@ app.layout = dbc.Container(fluid=True,
                                      dcc.Tabs(style=tabs_styles, 
                                               children=[
                                      dcc.Tab(label='Genomas depositados no GISAID', 
-                                             style=tab_style, 
+                                             style={**tab_style, 'padding':'10px'},
                                              selected_style=tab_selected_style,   
                                              children=[
                                      html.Br(),
@@ -490,10 +501,14 @@ app.layout = dbc.Container(fluid=True,
                                                                             'textAlign':'right'}),
                                      html.Br(),
                                      html.H2('TOTAL DE GENOMAS DEPOSITADOS E DISPONÍVEIS NO GISAID', style=h2_style),
-                                     html.Div([html.Div(dcc.Graph(id='fig1_anoSorotipo', figure=fig1_anoSorotipo), className='six columns'),
-                                               html.Div(dcc.Graph(id='fig1_acumulado', figure=fig1_acumulado), className='six columns')], className='row'),
+                                     html.Div([
+                                      dbc.Row([
+                                        dbc.Col(dcc.Graph(id='fig1_anoSorotipo', figure=fig1_anoSorotipo), width=6, style={'margin-right': '0px'}),
+                                        dbc.Col(dcc.Graph(id='fig1_acumulado', figure=fig1_acumulado), width=6),
+                                      ],)
+                                        ]), 
                                      html.Br(), 
-                                     html.Div([html.Div(dcc.Graph(id='mapa', figure=fig_mapa))], className='row'),
+                                     html.Div([html.Div(dcc.Graph(id='mapa', figure=fig_mapa))]),
                                      html.Br(), 
                                      html.Br(),
                                      html.H2('GENÓTIPOS EM CIRCULAÇÃO', style=h2_style),
@@ -502,17 +517,15 @@ app.layout = dbc.Container(fluid=True,
                                      html.Br(), 
                                      html.H5('Selecione a década:', style=h5_style),
                                      html.Div(dcc.Dropdown(id='decada_dropdown_regiao', options=decada_dropdown_regiao, value=2020, clearable=False)),
-                                    #consertar : graficos lado a lado
-                                   html.Div([dbc.Container([
-                                     dbc.Row([
-                                       dbc.Col(dcc.Graph(id='fig2_barplot', figure={}), width=6),
-                                       dbc.Col(dcc.Graph(id='fig2_area', figure={}), width=6),
-                                       ]) ])
-                                       ]),
-                                    #  html.Div([dbc.Col(dcc.Graph(id='fig2_barplot', figure={}),), 
-                                    #            dbc.Col(dcc.Graph(id='fig2_area', figure={})),
-                                    #           ]),
-                                    html.Div([html.H6(['* Dependendo do tamanho da sequência nucleotídica pode não ser possível definir o genótipo',
+                                    html.Div([
+                                      dbc.Row([
+                                        dbc.Col(dcc.Graph(id='fig2_barplot', figure={}), width=6, style={'margin-right': '0px'}),
+                                        dbc.Col(dcc.Graph(id='fig2_area', figure={}), width=6),
+                                      ],)
+                                        ]),
+
+                                   html.Br(),
+                                   html.Div([html.H6(['* Dependendo do tamanho da sequência nucleotídica pode não ser possível definir o genótipo',
                                                        html.Br(),
                                                        '** Sorotipo:genótipo (ex.: DENV1:V = DENV sorotipo 1, genótipo V)'
                                                         ], style=h6_style2), 
@@ -525,8 +538,13 @@ app.layout = dbc.Container(fluid=True,
                                      html.Br(), 
                                      html.H5('Selecione a década:', style=h5_style),
                                      html.Div(dcc.Dropdown(id='decada_dropdown_estado', options=decada_dropdown_estado, value=2020, clearable=False)),
-                                     html.Div([html.Div(dcc.Graph(id='fig3_barplot', figure={}), className='six columns'),
-                                               html.Div(dcc.Graph(id='fig3_area', figure={}), className='six columns')], className='row'),
+
+                                    html.Div([
+                                      dbc.Row([
+                                        dbc.Col(dcc.Graph(id='fig3_barplot', figure={}), width=6, style={'margin-right': '0px'}),
+                                        dbc.Col(dcc.Graph(id='fig3_area', figure={}), width=6),
+                                      ],)
+                                        ]),                                     
                                      html.Br(), 
                                      html.Br(), 
                                      html.Br(),
@@ -538,14 +556,14 @@ app.layout = dbc.Container(fluid=True,
                                                                        alt='GISAID webpage',
                                                                        src='https://github.com/vanleiko/RedeGenomica/blob/main/gisaid-logo.jpg?raw=true')))
                                                                        ]),
-                                     dcc.Tab(label='Sorotipos da dengue inferidos por testes de PCR', 
+                                     dcc.Tab(label='Sorotipos da dengue inferidos por testes de PCR e disponíveis na base de dados do SINAN', 
                                              style=tab_style, 
                                              selected_style=tab_selected_style,   
                                              children=[
                                      
                                      html.Br(),
                                      html.H2('SOROTIPOS DE DENV NO BRASIL AO LONGO DOS ANOS', style=h2_style),
-                                     html.H6('Dados de 2007-2024', style={'color':'#0d2a63',
+                                     html.H6('Frequência dos sorotipos por estado do Brasil entre 2007 e 2024 ', style={'color':'#0d2a63',
                                                                             'fontSize':24,
                                                                             'font-family':'sans-serif',
                                                                             'textAlign':'center'}),
@@ -558,15 +576,21 @@ app.layout = dbc.Container(fluid=True,
                                        ]),
                                         
                                      html.Br(),
+                                     html.H6(' Casos de dengue mensais atribuídos aos sorotipos do vírus e frequência relativa (%) anual*'
+                                             , style={'color':'#0d2a63',
+                                                      'fontSize':24,
+                                                      'font-family':'sans-serif',
+                                                      'textAlign':'center'}),
                                      html.H5('Selecione a região:', style=h5_style),
                                      html.Div(dcc.Dropdown(id='regiao_pcr_dropdown', options=regiao_dropdown, value='Brasil', clearable=False)),
-                                     html.Div([html.Div(dcc.Graph(id='fig_pcr_regiao', figure={}), className='ten columns')], className='row'),
+                                     html.Div([html.Div(dcc.Graph(id='fig_pcr_regiao', figure={}), className='ten columns')]),
+                                     html.Div([html.H6(['* Os sorotipos da dengue são inferidos por teste de PCR e a sua frequência por mês foi usada para inferir o número de casos de dengue atribuíveis a cada sorotipo (histograma). Em meses que não há testagem por PCR, também não há informação sobre o sorotipo atribuível aos casos de dengue. As linhas horizontais do gráfico representam a frequência reativa (%) dos sorotipos, que foi calculada com base apenas nos resultados dos testes por PCR. Os dados foram obtidos do Sistema de Informação de Agravos de Notificação (SINAN) onde os casos de dengue reportados seguem o critério laboratorial e/ou clínico/epidemiológico. Dados do ano de 2008 estão indisponíveis.',
+                                                        ], style=h6_style2), 
+                                     ]),
                                      html.Br(),
-                                     #consertar : graficos lado a lado
-                                     # colocar ** para explicar o eixo y de gráfico - adicionar desconhecido para os dados de sorotipo ausentes 
                                      html.H5('Selecione o estado:', style=h5_style),
                                      html.Div(dcc.Dropdown(id='estado_pcr_dropdown', options=estado_dropdown, value='Acre', clearable=False)),
-                                     html.Div([html.Div(dcc.Graph(id='fig_pcr_estado', figure={}), className='ten columns')], className='row')
+                                     html.Div([html.Div(dcc.Graph(id='fig_pcr_estado', figure={}), className='ten columns')])
                                              ])
                                       ])])
                                                 
@@ -594,7 +618,7 @@ def update_regiao_barplot(regiao, decada):
                           opacity=0.95, 
                           title='<b>Brasil</b>', 
                           height=450,
-                          width=680,)
+                          width=650,)
     fig2_barplot.update_layout(layout_barplot, legend=layout_legenda, legend_title_text=None,
                                margin={'l':0, 'r':0, 't':150, 'b':0})
     fig2_barplot.update_xaxes(nticks=15, tickangle=320, tickfont_size=12, 
@@ -624,7 +648,7 @@ def update_regiao_barplot(regiao, decada):
                             opacity=0.95, 
                             title=f'<b>{regiao}</b>', 
                             height=450,
-                            width=680)
+                            width=650)
       fig2_barplot.update_layout(layout_barplot, legend=layout_legenda, legend_title_text=None,
                                margin={'l':0, 'r':0, 't':150, 'b':0})
       fig2_barplot.update_xaxes(nticks=15, tickangle=320, tickfont_size=12, 
@@ -656,7 +680,7 @@ def update_regiao_area(regiao, decada):
                         color_discrete_map=cor_tipo, 
                         category_orders=ordem_tipo, 
                         height=450,
-                        width=680,
+                        width=650,
                         line_shape='spline')
     fig2_area.update_layout(layout_area, legend=layout_legenda, legend_title_text=None, 
                             hovermode='x unified', margin={'l':0, 'r':0, 't':150, 'b':0})
@@ -686,7 +710,7 @@ def update_regiao_area(regiao, decada):
                           color_discrete_map=cor_tipo, 
                           category_orders=ordem_tipo, 
                           height=450,
-                          width=680,
+                          width=650,
                           line_shape='spline')
       fig2_area.update_layout(layout_area, legend=layout_legenda, legend_title_text=None, 
                               hovermode='x unified', margin={'l':0, 'r':0, 't':150, 'b':0})
@@ -725,7 +749,7 @@ def update_estado_barplot(estado, decada):
                           opacity=0.95, 
                           title=f'<b>{estado}</b>', 
                           height=450,
-                          width=680)
+                          width=650)
     fig3_barplot.update_layout(layout_barplot, legend=layout_legenda, legend_title_text=None,
                                margin={'l':0, 'r':0, 't':150, 'b':0})
     fig3_barplot.update_xaxes(nticks=15, tickangle=320, tickfont_size=12, 
@@ -759,7 +783,7 @@ def update_estado_area(estado, decada):
                         color_discrete_map=cor_tipo, 
                         category_orders=ordem_tipo, 
                         height=450,
-                        width=680,
+                        width=650,
                         line_shape='spline')
     fig3_area.update_layout(layout_area, legend=layout_legenda, legend_title_text=None, 
                             hovermode='x unified', margin={'l':0, 'r':0, 't':150, 'b':0})
